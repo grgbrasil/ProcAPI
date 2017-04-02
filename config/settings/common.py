@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+
+
 """
 Django settings for ProcAPI project.
 
@@ -9,6 +12,7 @@ https://docs.djangoproject.com/en/1.10/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.10/ref/settings/
 """
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
 
@@ -39,6 +43,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 ]
 
+INSTALLED_APPS += ['django_extensions']
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -49,7 +55,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'ProcAPI.urls'
+ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
     {
@@ -67,7 +73,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'ProcAPI.wsgi.application'
+WSGI_APPLICATION = 'config.wsgi.application'
 
 
 # Database
