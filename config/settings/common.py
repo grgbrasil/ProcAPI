@@ -16,6 +16,9 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import os
 
+from mongoengine import connect
+from prettyconf import config
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -24,17 +27,17 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '7^74y=0n@4ag^bt5$lyg-+_2y_t9v-d9^dcndo-_vikyrxw!ml'
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=False, cast=config.boolean)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=config.list)
 
 
 # Application definition
 
-INSTALLED_APPS = [
+DJANGO_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -43,7 +46,16 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 ]
 
-INSTALLED_APPS += ['django_extensions']
+THIRD_PARTY_APPS = [
+    'rest_framework',
+    'rest_framework_swagger',
+]
+
+LOCAL_APPS = [
+
+]
+
+INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -81,10 +93,22 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.dummy'
     }
 }
+
+#mongodb config 
+
+MONGO_DBNAME = config('MONGO_DBNAME')
+MONGO_HOSTNAME = config('MONGO_HOSTNAME')
+#MONGO_PASSWORD = config('MONGO_PASSWORD')
+
+connect(MONGO_DBNAME, host=MONGO_HOSTNAME)
+
+
+
+#SESSION_ENGINE = 'mongoengine.django.sessions'
+#SESSION_SERIALIZER = 'mongoengine.django.sessions.BSONSerializer'
 
 
 # Password validation
@@ -109,9 +133,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'pt-br'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Araguaina'
 
 USE_I18N = True
 
@@ -124,3 +148,15 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'static'),
+)
+
+# Media files
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+MEDIA_URL = '/media/'

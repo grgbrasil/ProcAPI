@@ -1,2 +1,5 @@
 django==1.10.6
 mongoengine==0.11.0
+djangorestframework==3.6.2
+django-rest-swagger==2.1.2
+prettyconf==1.2.3
