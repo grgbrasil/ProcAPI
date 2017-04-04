@@ -72,7 +72,9 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            os.path.join(os.path.dirname(BASE_DIR), 'procapi', 'templates')
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -99,17 +101,22 @@ DATABASES = {
 }
 
 # mongodb config
-
 MONGO_DBNAME = config('MONGO_DBNAME')
 MONGO_HOSTNAME = config('MONGO_HOSTNAME')
-# MONGO_PORT = config('MONGO_PORT')
-# MONGO_USER = config('MONGO_USER')
-# MONGO_PASSWORD = config('MONGO_PASSWORD')
+MONGO_PORT = config('MONGO_PORT')
+MONGO_USER = config('MONGO_USER')
+MONGO_PASSWORD = config('MONGO_PASSWORD')
 
-mongoengine.connect(MONGO_DBNAME, host=MONGO_HOSTNAME)
+MONGODB_DATABASE_HOST = 'mongodb://{}:{}@{}:{}/{}'.format(
+    MONGO_USER,
+    MONGO_PASSWORD,
+    MONGO_HOSTNAME,
+    MONGO_PORT,
+    MONGO_DBNAME
+)
 
-# SESSION_ENGINE = 'mongoengine.django.sessions'
-# SESSION_SERIALIZER = 'mongoengine.django.sessions.BSONSerializer'
+# mongo_con = mongoengine.connect(MONGO_DBNAME, host=MONGODB_DATABASE_HOST)
+mongo_conn = mongoengine.connect(MONGO_DBNAME)
 
 
 # Password validation
@@ -150,14 +157,14 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'procapi', 'staticfiles')
 
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'static'),
+    os.path.join(os.path.dirname(BASE_DIR), 'procapi', 'static')
 )
 
 # Media files
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'procapi', 'media')
 
 MEDIA_URL = '/media/'
