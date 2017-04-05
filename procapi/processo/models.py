@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import absolute_import, print_function, unicode_literals
 
-from mongoengine import *
+from mongoengine import (
+    Document,
+    StringField
+)
 from config.settings.common import mongo_conn
 
 

@@ -12,11 +12,11 @@ https://docs.djangoproject.com/en/1.10/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.10/ref/settings/
 """
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import absolute_import, unicode_literals
 
 import os
 
-import mongoengine
+from mongoengine import connect
 from prettyconf import config
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -115,9 +115,7 @@ MONGODB_DATABASE_HOST = 'mongodb://{}:{}@{}:{}/{}'.format(
     MONGO_DBNAME
 )
 
-# mongo_con = mongoengine.connect(MONGO_DBNAME, host=MONGODB_DATABASE_HOST)
-mongo_conn = mongoengine.connect(MONGO_DBNAME)
-
+mongo_conn = connect(db=MONGO_DBNAME, host=MONGO_HOSTNAME)
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators

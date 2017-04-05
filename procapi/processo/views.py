@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import unicode_literals
 
 from django.shortcuts import render
 
@@ -18,4 +18,4 @@ def index(request):
     proc.save()
 
     procs = Processo.objects
-    return render(request, 'index.html', {'usuarios': procs})
+    return render(request, 'index.html', {'procs': procs})

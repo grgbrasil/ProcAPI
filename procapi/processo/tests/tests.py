@@ -1,45 +1,18 @@
-from django.test import TestCase
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import, print_function, unicode_literals
 
-import mongoengine
-from mongoengine import connect
-from mongoengine.connection import (
-    get_connection
-)
+from django.test import TestCase
+from mixer.backend.mongoengine import Mixer
+from mongoengine import *
 
 from ..models import Processo
 
 
-class TestA(TestCase):
+class TestProcesso(TestCase):
 
     def setUp(self):
-        import mongomock
-
-        # me = connect(
-        #     # db='mongoenginetest',
-        #     host='mongomock://localhost/mongoenginetest',
-        #     alias='testdb',
-        # )
-        # print(me.get_default_database())
-        # self.me.get_connection()
-
-        self.c1 = connect(host='mongomock://localhost/asdfasdf')
-
-        import random
-        for p in enumerate(range(10)):
-            randomico = random.random()
-            self.proc = Processo.objects.create(
-                numero='N.{}'.format(randomico),
-                chave='Chave {}'.format(randomico),
-            )
-            print(self.proc.to_json())
-
-        self.a = None
-
-    # def tearDown(self):
-    #     mongoengine.connection._connection_settings = {}
-    #     mongoengine.connection._connections = {}
-    #     mongoengine.connection._dbs = {}
+        mixer = Mixer(commit=False)
+        self.processo = mixer.blend(Processo, numero='12345')
 
     def test_a_is_none(self):
-        # print(self.conn)
-        self.assertIsNone(self.a)
+        self.assertEqual(self.processo.numero, '12345')
