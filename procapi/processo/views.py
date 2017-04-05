@@ -8,12 +8,12 @@ from .models import Processo
 
 
 def index(request):
-    import random
-    randomico = random.random()
+    from random import randint
+    from datetime import datetime
 
     proc = Processo.objects.create(
-        numero='N.{}'.format(randomico),
-        chave='Chave {}'.format(randomico),
+        numero='N.{:%M%S%f}'.format(datetime.now()),
+        chave='Chave {}'.format('1111111'),
     )
     proc.save()
 

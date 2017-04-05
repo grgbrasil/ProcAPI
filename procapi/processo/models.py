@@ -2,10 +2,19 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
 from mongoengine import (
+    BooleanField,
+    DecimalField,
+    DateTimeField,
     Document,
+    EmbeddedDocument,
+    EmbeddedDocumentField,
+    IntField,
+    ListField,
+    ReferenceField,
     StringField
 )
 from config.settings.common import mongo_conn
+
 
 class Classe(Document):
     codigo = IntField(required=True, unique=True)
@@ -73,8 +82,11 @@ class ProcessoPolo(EmbeddedDocument):
         ('TJ', 'Testemunha do Juízo'),
         ('VI', 'Vítima'))
 
-    tipo = StringField(max_length=2, choices=POLO_TIPO, required=True, unique=True)
+    tipo = StringField(
+        max_length=2, choices=POLO_TIPO, required=True, unique=True
+    )
     partes = ListField(EmbeddedDocumentField(ProcessoAssunto))
+
 
 class ProcessoPoloParte(EmbeddedDocument):
     pessoa = EmbeddedDocumentField('ProcessoPoloPartePessoa')
@@ -105,7 +117,9 @@ class ProcessoPoloPartePessoa(EmbeddedDocument):
     cidade_natural = StringField()
     estado_natural = StringField(max_length=2)
     nacionalidade = StringField(max_length=2)
-    enderecos = ListField(EmbeddedDocumentField('ProcessoPoloPartePessoaEndereco'))
+    enderecos = ListField(
+        EmbeddedDocumentField('ProcessoPoloPartePessoaEndereco')
+    )
 
 
 class ProcessoPoloPartePessoaEndereco(EmbeddedDocument):
