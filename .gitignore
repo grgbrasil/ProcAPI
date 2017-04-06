@@ -91,3 +91,7 @@ ENV/
 
 # Visual Studio Code
 .vscode/
+
+#sqlite
+*.sqlite3
+*.sqlite*
