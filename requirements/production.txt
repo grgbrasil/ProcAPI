@@ -6,3 +6,5 @@ mongomock==3.8.0
 
 djangorestframework==3.6.2
 django-rest-swagger==2.1.2
+
+suds-jurko==0.6
