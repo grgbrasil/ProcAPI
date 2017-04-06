@@ -8,6 +8,7 @@ from mongoengine import (
     Document,
     EmbeddedDocument,
     EmbeddedDocumentField,
+    EmbeddedDocumentListField,
     IntField,
     ListField,
     ReferenceField,
@@ -33,7 +34,7 @@ class Localidade(Document):
 
 
 class OrgaoJulgador(Document):
-    codigo = IntField(required=True, unique=True)
+    codigo = StringField(required=True, unique=True)
     nome = StringField()
 
     def __unicode__(self):
@@ -47,32 +48,79 @@ class Assunto(Document):
     def __unicode__(self):
         return self.nome
 
+class ProcessoClasse(EmbeddedDocument):
+    codigo = IntField(required=True)
+    nome = StringField()
+
+
+class ProcessoLocalidade(EmbeddedDocument):
+    codigo = IntField(required=True)
+    nome = StringField()
+
+
+class ProcessoOrgaoJulgador(EmbeddedDocument):
+    codigo = StringField(required=True)
+    nome = StringField()
+
 
 class ProcessoAssunto(EmbeddedDocument):
-    assunto = ReferenceField(Assunto, required=True, unique=True)
     principal = BooleanField(required=True, default=False)
+    codigo = IntField(required=True)
+    nome = StringField()
 
     def __unicode__(self):
-        return '{} ({})'.format(self.assunto, self.principal)
+        return '{} ({})'.format(self.nome, self.principal)
 
 
 class ProcessoVinculado(EmbeddedDocument):
-
     PROCESSO_VINCULO = (
         ('CX', ''),
         ('CT', ''),
         ('DP', 'Dependente'),
         ('OR', 'Originário'))
 
-    processo = ReferenceField('Processo', required=True)
-    vinculo = StringField(max_length=2, choices=PROCESSO_VINCULO)
+    numero = StringField(max_length=20, required=True)
+    vinculo = StringField(max_length=2, choices=PROCESSO_VINCULO, required=True)
 
     def __unicode__(self):
-        return '{} ({})'.format(self.processo, self.vinculo)
+        return '{} ({})'.format(self.numero, self.vinculo)
 
 
-class ProcessoPolo(EmbeddedDocument):
+class Processo(Document):
+    PROCESSO_GRAU = (
+        (1, '1º Grau'),
+        (2, '2º Grau'))
+    PROCESSO_NIVEL_SIGILO = (
+        (0, 'Público'),
+        (1, 'Segredo de Justiça'),
+        (2, 'Sigiloso'))
 
+    numero = StringField(max_length=20, required=True, unique=True)
+    chave = StringField(max_length=50)
+    grau = IntField(choices=PROCESSO_GRAU)
+    classe = EmbeddedDocumentField('ProcessoClasse')
+    localidade = EmbeddedDocumentField('ProcessoLocalidade')
+    orgao_julgador = EmbeddedDocumentField('ProcessoOrgaoJulgador')
+    nivel_sigilo = IntField(choices=PROCESSO_NIVEL_SIGILO)
+    valor_causa = DecimalField(precision=2)
+    assuntos = EmbeddedDocumentListField('ProcessoAssunto')
+    vinculados = EmbeddedDocumentListField('ProcessoVinculado')
+    polos = ReferenceField('ListaPolos')
+    eventos = ReferenceField('ListaEventos')
+    data_ultimo_movimento = DateTimeField()
+    data_ultima_atualizacao = DateTimeField()
+    atualizado = BooleanField(default=False)
+
+    def __unicode__(self):
+        return self.numero
+
+
+class ListaPolos(Document):
+    processo = StringField(max_length=20, required=True, unique=True)
+    itens = EmbeddedDocumentListField('ListaPolosItem')
+
+
+class ListaPolosItem(EmbeddedDocument):
     POLO_TIPO = (
         ('AD', 'Assistente Simples Desinteressado (amicus curiae)'),
         ('AT', 'Polo Ativo'),
@@ -83,24 +131,22 @@ class ProcessoPolo(EmbeddedDocument):
         ('VI', 'Vítima'))
 
     tipo = StringField(
-        max_length=2, choices=POLO_TIPO, required=True, unique=True
+        max_length=2, choices=POLO_TIPO, required=True
     )
-    partes = ListField(EmbeddedDocumentField(ProcessoAssunto))
+    partes = EmbeddedDocumentListField('ListaPolosItemParte')
 
 
-class ProcessoPoloParte(EmbeddedDocument):
-    pessoa = EmbeddedDocumentField('ProcessoPoloPartePessoa')
-    advogados = ListField(EmbeddedDocumentField('ProcessoPoloParteAdvogado'))
+class ListaPolosItemParte(EmbeddedDocument):
+    pessoa = EmbeddedDocumentField('ListaPolosItemPartePessoa')
+    advogados = EmbeddedDocumentListField('ListaPolosItemParteAdvogado')
 
 
-class ProcessoPoloPartePessoa(EmbeddedDocument):
-
+class ListaPolosItemPartePessoa(EmbeddedDocument):
     PESSOA_TIPO = (
         ('fisica', 'Física'),
         ('juridica', 'Jurídica'),
         ('autoridade', 'Autoridade'),
         ('orgaorepresentacao', 'Orgão de Representação'))
-
     PESSOA_SEXO = (
         ('M', 'Física'),
         ('F', 'Jurídica'),
@@ -117,12 +163,10 @@ class ProcessoPoloPartePessoa(EmbeddedDocument):
     cidade_natural = StringField()
     estado_natural = StringField(max_length=2)
     nacionalidade = StringField(max_length=2)
-    enderecos = ListField(
-        EmbeddedDocumentField('ProcessoPoloPartePessoaEndereco')
-    )
+    enderecos = EmbeddedDocumentListField('ListaPolosItemPartePessoaEndereco')
 
 
-class ProcessoPoloPartePessoaEndereco(EmbeddedDocument):
+class ListaPolosItemPartePessoaEndereco(EmbeddedDocument):
     cep = StringField(max_length=10)
     logradouro = StringField()
     numero = StringField()
@@ -133,8 +177,7 @@ class ProcessoPoloPartePessoaEndereco(EmbeddedDocument):
     pais = StringField()
 
 
-class ProcessoPoloParteAdvogado(EmbeddedDocument):
-
+class ListaPolosItemParteAdvogado(EmbeddedDocument):
     ADVOGADO_TIPO = (
         ('A', ''),
         ('E', ''),
@@ -148,56 +191,28 @@ class ProcessoPoloParteAdvogado(EmbeddedDocument):
     tipo_representante = StringField(max_length=1, choices=ADVOGADO_TIPO)
 
 
-class ProcessoEvento(EmbeddedDocument):
+class ListaEventos(Document):
+    processo = StringField(max_length=20, required=True, unique=True)
+    itens = EmbeddedDocumentListField('ListaEventosItem')
 
-    EVENTO_NIVEL_SIGILO = (
+
+class ListaEventosItem(EmbeddedDocument):
+    NIVEL_SIGILO = (
         (0, 'Público'),
         (1, 'Segredo de Justiça'),
         (2, 'Sigiloso'))
 
-    evento = IntField(required=True, unique=True)
+    numero = IntField(required=True)
     data_protocolo = DateTimeField()
-    nivel_sigilo = IntField(choices=EVENTO_NIVEL_SIGILO)
+    nivel_sigilo = IntField(choices=NIVEL_SIGILO)
     tipo_local = StringField()
     tipo_nacional = StringField()
     usuario = StringField()
-    documentos = ListField(EmbeddedDocumentField('ProcessoDocumento'))
+    documentos = EmbeddedDocumentListField('ListaEventosItemDocumento')
 
 
-class ProcessoDocumento(EmbeddedDocument):
-    documento = StringField(required=True, unique=True)
+class ListaEventosItemDocumento(EmbeddedDocument):
+    documento = StringField(required=True)
     tipo = StringField()
     nome = StringField()
     mimetype = StringField()
-
-
-class Processo(Document):
-
-    PROCESSO_GRAU = (
-        (1, '1º Grau'),
-        (2, '2º Grau'))
-
-    PROCESSO_NIVEL_SIGILO = (
-        (0, 'Público'),
-        (1, 'Segredo de Justiça'),
-        (2, 'Sigiloso'))
-
-    numero = StringField(max_length=20, required=True, unique=True)
-    chave = StringField(max_length=50)
-    grau = IntField(choices=PROCESSO_GRAU)
-    classe = ReferenceField(Classe)
-    localidade = ReferenceField(Localidade)
-    orgao_julgador = ReferenceField(OrgaoJulgador)
-    nivel_sigilo = IntField(choices=PROCESSO_NIVEL_SIGILO)
-    valor_causa = DecimalField(precision=2)
-    assuntos = ListField(EmbeddedDocumentField(ProcessoAssunto))
-    vinculados = ListField(EmbeddedDocumentField(ProcessoVinculado))
-    polos = ListField(EmbeddedDocumentField(ProcessoPolo))
-    eventos = ListField(EmbeddedDocumentField(ProcessoEvento))
-    data_ultimo_movimento = DateTimeField()
-    data_ultima_atualizacao = DateTimeField()
-    atualizado = BooleanField(default=False)
-
-    def __unicode__(self):
-        return self.numero
-
