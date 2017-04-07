@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from rest_framework.generics import ListAPIView
 from rest_framework_extensions.mixins import NestedViewSetMixin
 from rest_framework_mongoengine.viewsets import (
     ReadOnlyModelViewSet as MongoReadOnlyModelViewSet,
 )
 
-from .models import Evento, Processo
+from .models import Evento, Parte, Processo
 from .serializers import (
-    ListaEventosSerializer,
+    ListaEventoSerializer,
+    ListaParteSerializer,
     ProcessoSerializer
 )
 
@@ -22,10 +24,10 @@ class ProcessoViewSet(NestedViewSetMixin, MongoReadOnlyModelViewSet, ):
         return Processo.objects.all()
 
 
-class EventosViewSet(NestedViewSetMixin, MongoReadOnlyModelViewSet):
+class EventoViewSet(NestedViewSetMixin, MongoReadOnlyModelViewSet):
     model = Evento
     lookup_field = 'numero'
-    serializer_class = ListaEventosSerializer
+    serializer_class = ListaEventoSerializer
 
     def get_queryset(self):
         processo_numero = self.kwargs['parent_lookup_processo']
@@ -34,3 +36,12 @@ class EventosViewSet(NestedViewSetMixin, MongoReadOnlyModelViewSet):
             evento_numero = self.kwargs['numero']
             eventos.filter(numero=evento_numero)
         return eventos
+
+
+class ParteListAPIView(ListAPIView):
+    model = Parte
+    serializer_class = ListaParteSerializer
+
+    def get_queryset(self):
+        processo_numero = self.kwargs['parent_lookup_processo']
+        return Processo.objects.get(numero=processo_numero).partes
