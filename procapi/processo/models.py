@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function, unicode_literals
 
+from django.core.urlresolvers import reverse
 from mongoengine import (
     BooleanField,
     DecimalField,
@@ -106,13 +107,16 @@ class Processo(Document):
     assuntos = EmbeddedDocumentListField('ProcessoAssunto')
     vinculados = EmbeddedDocumentListField('ProcessoVinculado')
     polos = ReferenceField('ListaPolos')
-    eventos = ReferenceField('ListaEventos')
     data_ultimo_movimento = DateTimeField()
     data_ultima_atualizacao = DateTimeField()
     atualizado = BooleanField(default=False)
 
     def __unicode__(self):
         return self.numero
+
+    @property
+    def eventos(self):
+        return Evento.objects.filter(processo=self)
 
 
 class ListaPolos(Document):
@@ -191,27 +195,23 @@ class ListaPolosItemParteAdvogado(EmbeddedDocument):
     tipo_representante = StringField(max_length=1, choices=ADVOGADO_TIPO)
 
 
-class ListaEventos(Document):
-    processo = StringField(max_length=20, required=True, unique=True)
-    itens = EmbeddedDocumentListField('ListaEventosItem')
-
-
-class ListaEventosItem(EmbeddedDocument):
+class Evento(Document):
     NIVEL_SIGILO = (
         (0, 'Público'),
         (1, 'Segredo de Justiça'),
         (2, 'Sigiloso'))
 
+    processo = ReferenceField('Processo', dbref=True)
     numero = IntField(required=True)
     data_protocolo = DateTimeField()
     nivel_sigilo = IntField(choices=NIVEL_SIGILO)
     tipo_local = StringField()
     tipo_nacional = StringField()
     usuario = StringField()
-    documentos = EmbeddedDocumentListField('ListaEventosItemDocumento')
+    documentos = EmbeddedDocumentListField('EventoDocumento')
 
 
-class ListaEventosItemDocumento(EmbeddedDocument):
+class EventoDocumento(EmbeddedDocument):
     documento = StringField(required=True)
     tipo = StringField()
     nome = StringField()

@@ -10,7 +10,12 @@ router = ExtendedSimpleRouter()
     router.register(
         r'processos',
         views.ProcessoViewSet,
-        base_name='processo'
+        base_name='processo')
+    .register(
+        r'eventos',
+        views.EventosViewSet,
+        base_name='processos-evento',
+        parents_query_lookups=['processo']
     )
 )
 

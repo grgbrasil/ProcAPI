@@ -176,3 +176,11 @@ EPROC_DEFAULT_PASS = config('EPROC_DEFAULT_PASS')
 EPROC_WSDL_PROCESSOS = config('EPROC_WSDL_PROCESSOS')
 EPROC_WSDL_SERVICOS = config('EPROC_WSDL_SERVICOS')
 EPROC_WSDL_TABELAS = config('EPROC_WSDL_TABELAS')
+
+# DjangoRestFramework
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS':
+    'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+}
