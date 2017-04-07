@@ -49,6 +49,7 @@ DJANGO_APPS = [
 THIRD_PARTY_APPS = [
     'rest_framework',
     'rest_framework_swagger',
+    'rest_framework_mongoengine',
 ]
 
 LOCAL_APPS = [
@@ -96,7 +97,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': ':memory:',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 
@@ -158,7 +159,7 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'procapi', 'staticfiles')
 
 STATICFILES_DIRS = (
-    os.path.join(os.path.dirname(BASE_DIR), 'procapi', 'static')
+    os.path.join(os.path.dirname(BASE_DIR), 'procapi', 'static'),
 )
 
 # Media files

@@ -1,21 +1,18 @@
 # -*- coding: utf-8 -*-
-
 from __future__ import unicode_literals
 
 from django.shortcuts import render
+from rest_framework import viewsets
+from rest_framework_mongoengine.viewsets import ModelViewSet as MongoModelViewSet
+from rest_framework_extensions.mixins import NestedViewSetMixin
 
-from .models import Processo
+from models import Processo
+from serializers import ProcessoSerializer
 
+class ProcessoViewSet(MongoModelViewSet):
+    model = Processo
+    lookup_field = 'numero'
+    serializer_class = ProcessoSerializer
 
-def index(request):
-    from random import randint
-    from datetime import datetime
-
-    proc = Processo.objects.create(
-        numero='N.{:%M%S%f}'.format(datetime.now()),
-        chave='Chave {}'.format('1111111'),
-    )
-    proc.save()
-
-    procs = Processo.objects
-    return render(request, 'index.html', {'procs': procs})
+    def get_queryset(self):
+        return Processo.objects.all()
