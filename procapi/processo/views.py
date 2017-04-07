@@ -31,11 +31,12 @@ class EventoViewSet(NestedViewSetMixin, MongoReadOnlyModelViewSet):
 
     def get_queryset(self):
         processo_numero = self.kwargs['parent_lookup_processo']
-        eventos = Processo.objects.get(numero=processo_numero).eventos
-        if 'numero' in self.kwargs:
-            evento_numero = self.kwargs['numero']
-            eventos.filter(numero=evento_numero)
-        return eventos
+        processo = Processo.objects.filter(numero=processo_numero).first()
+        if processo:
+            if 'numero' in self.kwargs:
+                return processo.eventos.filter(numero=self.kwargs['numero'])
+            return processo.eventos
+        return []
 
 
 class ParteListAPIView(ListAPIView):
@@ -44,4 +45,7 @@ class ParteListAPIView(ListAPIView):
 
     def get_queryset(self):
         processo_numero = self.kwargs['parent_lookup_processo']
-        return Processo.objects.get(numero=processo_numero).partes
+        processo = Processo.objects.filter(numero=processo_numero).first()
+        if processo:
+            return processo.partes
+        return []
