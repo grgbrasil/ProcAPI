@@ -106,7 +106,7 @@ class Processo(Document):
     valor_causa = DecimalField(precision=2)
     assuntos = EmbeddedDocumentListField('ProcessoAssunto')
     vinculados = EmbeddedDocumentListField('ProcessoVinculado')
-    polos = ReferenceField('ListaPolos')
+    # polos = ReferenceField('ListaPolos')
     data_ultimo_movimento = DateTimeField()
     data_ultima_atualizacao = DateTimeField()
     atualizado = BooleanField(default=False)
@@ -118,34 +118,12 @@ class Processo(Document):
     def eventos(self):
         return Evento.objects.filter(processo=self)
 
-
-class ListaPolos(Document):
-    processo = StringField(max_length=20, required=True, unique=True)
-    itens = EmbeddedDocumentListField('ListaPolosItem')
-
-
-class ListaPolosItem(EmbeddedDocument):
-    POLO_TIPO = (
-        ('AD', 'Assistente Simples Desinteressado (amicus curiae)'),
-        ('AT', 'Polo Ativo'),
-        ('FL', 'Fiscal da Lei Diverso'),
-        ('PA', 'Polo Passivo'),
-        ('TC', 'Terceiro'),
-        ('TJ', 'Testemunha do Juízo'),
-        ('VI', 'Vítima'))
-
-    tipo = StringField(
-        max_length=2, choices=POLO_TIPO, required=True
-    )
-    partes = EmbeddedDocumentListField('ListaPolosItemParte')
+    @property
+    def partes(self):
+        return Parte.objects.filter(processo=self)
 
 
-class ListaPolosItemParte(EmbeddedDocument):
-    pessoa = EmbeddedDocumentField('ListaPolosItemPartePessoa')
-    advogados = EmbeddedDocumentListField('ListaPolosItemParteAdvogado')
-
-
-class ListaPolosItemPartePessoa(EmbeddedDocument):
+class PartePessoa(EmbeddedDocument):
     PESSOA_TIPO = (
         ('fisica', 'Física'),
         ('juridica', 'Jurídica'),
@@ -167,10 +145,10 @@ class ListaPolosItemPartePessoa(EmbeddedDocument):
     cidade_natural = StringField()
     estado_natural = StringField(max_length=2)
     nacionalidade = StringField(max_length=2)
-    enderecos = EmbeddedDocumentListField('ListaPolosItemPartePessoaEndereco')
+    enderecos = EmbeddedDocumentListField('PartePessoaEndereco')
 
 
-class ListaPolosItemPartePessoaEndereco(EmbeddedDocument):
+class PartePessoaEndereco(EmbeddedDocument):
     cep = StringField(max_length=10)
     logradouro = StringField()
     numero = StringField()
@@ -181,7 +159,7 @@ class ListaPolosItemPartePessoaEndereco(EmbeddedDocument):
     pais = StringField()
 
 
-class ListaPolosItemParteAdvogado(EmbeddedDocument):
+class ParteAdvogado(EmbeddedDocument):
     ADVOGADO_TIPO = (
         ('A', ''),
         ('E', ''),
@@ -193,6 +171,23 @@ class ListaPolosItemParteAdvogado(EmbeddedDocument):
     documento_principal = StringField()
     identidade_principal = StringField()
     tipo_representante = StringField(max_length=1, choices=ADVOGADO_TIPO)
+
+
+class Parte(Document):
+    POLO_TIPO = (
+        ('AD', 'Assistente Simples Desinteressado (amicus curiae)'),
+        ('AT', 'Polo Ativo'),
+        ('FL', 'Fiscal da Lei Diverso'),
+        ('PA', 'Polo Passivo'),
+        ('TC', 'Terceiro'),
+        ('TJ', 'Testemunha do Juízo'),
+        ('VI', 'Vítima'))
+
+    processo = ReferenceField('Processo', dbref=True)
+    tipo = StringField(
+        max_length=2, choices=POLO_TIPO, required=True)
+    pessoa = EmbeddedDocumentField('PartePessoa')
+    advogados = EmbeddedDocumentListField('ParteAdvogado')
 
 
 class Evento(Document):
