@@ -50,6 +50,7 @@ class Assunto(Document):
     def __unicode__(self):
         return self.nome
 
+
 class ProcessoClasse(EmbeddedDocument):
     codigo = IntField(required=True)
     nome = StringField()
@@ -107,7 +108,6 @@ class Processo(Document):
     valor_causa = DecimalField(precision=2)
     assuntos = EmbeddedDocumentListField('ProcessoAssunto')
     vinculados = EmbeddedDocumentListField('ProcessoVinculado')
-    # polos = ReferenceField('ListaPolos')
     data_ultimo_movimento = DateTimeField()
     data_ultima_atualizacao = DateTimeField()
     atualizado = BooleanField(default=False)
@@ -201,9 +201,10 @@ class Evento(Document):
         (1, 'Segredo de Justiça'),
         (2, 'Sigiloso'))
 
-    processo = ReferenceField('Processo', dbref=True)
+    processo = ReferenceField('Processo', required=True, unique=True, unique_with='numero')
     numero = IntField(required=True)
     data_protocolo = DateTimeField()
+    descricao = StringField()
     nivel_sigilo = IntField(choices=NIVEL_SIGILO)
     tipo_local = StringField()
     tipo_nacional = StringField()
