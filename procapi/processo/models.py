@@ -217,3 +217,9 @@ class EventoDocumento(EmbeddedDocument):
     tipo = StringField()
     nome = StringField()
     mimetype = StringField()
+
+
+class TipoDocumento(Document):
+    codigo = IntField(required=True, unique=True, unique_with='grau')
+    grau = IntField(choices=Processo.PROCESSO_GRAU, required=True)
+    nome = StringField()
