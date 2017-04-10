@@ -13,6 +13,7 @@ class ConsultaEProc(object):
     GRAU_1 = 1
     GRAU_2 = 2
 
+    numero = None
     resposta = None
     sucesso = None
     mensagem = None
@@ -36,7 +37,7 @@ class ConsultaEProc(object):
                   senha=settings.EPROC_DEFAULT_PASS):
         """Método que faz a consulta do processo no webservice wsdl"""
 
-        numero = self.numero_puro(numero)
+        self.numero = self.numero_puro(numero)
         grau = self.grau(numero)
 
         self.limpar()
@@ -48,7 +49,7 @@ class ConsultaEProc(object):
             request = client.service.consultarProcesso(
                 idConsultante=usuario,
                 senhaConsultante=senha,
-                numeroProcesso=numero,
+                numeroProcesso=self.numero,
                 dataReferencia=None,
                 movimentos=True,
                 documento=True)
@@ -57,8 +58,8 @@ class ConsultaEProc(object):
                 self.carregar(request)
                 return request.sucesso
 
-        except Exception as e:
-            raise Exception(e)
+        except Exception as ex:
+            raise Exception(ex)
 
         return False
 
