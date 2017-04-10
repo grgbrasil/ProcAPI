@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function, unicode_literals
 
+import json
 import re
 
 from suds.client import Client
+from suds.sudsobject import asdict
 
 from django.conf import settings
 
@@ -74,3 +76,36 @@ class ConsultaEProc(object):
         self.resposta = resposta
         self.sucesso = resposta.sucesso
         self.mensagem = resposta.mensagem
+
+    def __suds_to_dict(self, data):
+        """Converte sudsobject para dict"""
+        out = {}
+        for key, value in asdict(data).iteritems():
+            if hasattr(value, '__keylist__'):
+                out[key] = self.__suds_to_dict(value)
+            elif isinstance(value, list):
+                out[key] = []
+                for item in value:
+                    if hasattr(item, '__keylist__'):
+                        out[key].append(self.__suds_to_dict(item))
+                    else:
+                        out[key].append(item)
+            else:
+                out[key] = value
+        return out
+
+    def __suds_to_json(self, data):
+        """Converte sudsobject para json"""
+        return json.dumps(self.__suds_to_dict(data))
+
+    def resposta_to_dict(self):
+        """Converte resposta do webservice wsdl para o formato dict"""
+        if self.resposta:
+            return self.__suds_to_dict(self.resposta.processo)
+
+    def resposta_to_json(self):
+        """Converte resposta do webservice wsdl para o formato json"""
+        if self.resposta:
+            return self.__suds_to_json(self.resposta.processo)
+
+
