@@ -7,6 +7,7 @@ from mongoengine import (
     DecimalField,
     DateTimeField,
     Document,
+    DynamicDocument,
     EmbeddedDocument,
     EmbeddedDocumentField,
     EmbeddedDocumentListField,
@@ -121,6 +122,10 @@ class Processo(Document):
     @property
     def partes(self):
         return Parte.objects.filter(processo=self)
+
+
+class ProcessoBruto(DynamicDocument):
+    processo = ReferenceField('Processo', required=True, unique=True)
 
 
 class PartePessoa(EmbeddedDocument):
