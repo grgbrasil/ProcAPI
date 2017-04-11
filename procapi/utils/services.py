@@ -2,7 +2,9 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
 import json
+import math
 import re
+import xml.etree.ElementTree as ET
 
 from suds.client import Client
 from suds.sudsobject import asdict
@@ -109,3 +111,62 @@ class ConsultaEProc(object):
             return self.__suds_to_json(self.resposta.processo)
 
 
+class ConsultaEProcMovimentados(object):
+    """Consulta Processos Movimentos no E-Proc"""
+
+    grau = None
+    data_inicial = None
+    data_final = None
+    max_registros = None
+    total_registros = None
+    total_paginas = None
+    pagina = None
+
+    def __init__(self, grau, data_inicial, data_final, max_registros):
+        """Inicialização da instância da classe"""
+        self.grau = grau
+        self.data_inicial = data_inicial
+        self.data_final = data_final
+        self.max_registros = max_registros
+
+    def get_url(self, grau):
+        """Gera a URL baseada no grau do processo"""
+        return settings.EPROC_WSDL_SERVICOS.format(grau)
+
+    def consultar(self, pagina=0):
+        """Consulta processos da página informada"""
+
+        try:
+
+            client = Client(self.get_url(self.grau), headers={'User-Agent':'DPE-TO'})
+
+            resposta = client.service.consultarProcessosAlteracaoPeriodo(
+                dataHoraInicio=self.data_inicial.strftime("%Y-%m-%d %H:%M:%S"),
+                dataHoraFim=self.data_final.strftime("%Y-%m-%d %H:%M:%S"),
+                entidade='DPU',
+                paginate=1,
+                numMaxRegistrosRetorno=self.max_registros,
+                numPaginaAtual=pagina)
+
+            root_grau = ET.fromstring(resposta)
+            lista_processos = []
+
+            for child in root_grau:
+                if child.tag == 'total':
+                    self.total_registros = int(child.text)
+                elif child.tag == 'numProcesso':
+                    lista_processos.append(child.text)
+
+            if pagina == 0:
+                self.calcular_total_paginas()
+
+            return lista_processos
+
+        except Exception as ex:
+            raise Exception(ex)
+
+        return None
+
+    def calcular_total_paginas(self):
+        """Calcula total de páginas baseado no total de registros"""
+        self.total_paginas = int(math.ceil(float(self.total_registros)/self.max_registros))

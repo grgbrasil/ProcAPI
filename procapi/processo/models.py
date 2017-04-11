@@ -161,11 +161,11 @@ class PartePessoa(EmbeddedDocument):
         ('autoridade', 'Autoridade'),
         ('orgaorepresentacao', 'Orgão de Representação'))
     PESSOA_SEXO = (
-        ('M', 'Física'),
-        ('F', 'Jurídica'),
+        ('M', 'Masculino'),
+        ('F', 'Feminino'),
         ('D', 'Diverso'))
 
-    tipo = StringField(max_length=2, choices=PESSOA_TIPO)
+    tipo = StringField(choices=PESSOA_TIPO)
     documento_principal = StringField()
     nome = StringField()
     nome_genitor = StringField()
