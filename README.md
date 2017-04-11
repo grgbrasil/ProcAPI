@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/tiagoamx/ProcAPI.svg?branch=master)](https://travis-ci.org/tiagoamx/ProcAPI)
+
 # ProcAPI
 
 API RESTFul para otimização de consultas ao sistema de processo judicial eletrônico **[Eproc](http://eproc.tjto.jus.br/)**.
