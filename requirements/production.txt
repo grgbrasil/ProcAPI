@@ -6,3 +6,4 @@ drf-extensions==0.3.1
 django-rest-swagger==2.1.2
 django-rest-framework-mongoengine==3.3.1
 suds-jurko==0.6
+celery==4.0.2
