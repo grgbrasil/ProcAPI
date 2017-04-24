@@ -7,3 +7,6 @@ django-rest-swagger==2.1.2
 django-rest-framework-mongoengine==3.3.1
 suds-jurko==0.6
 celery==4.0.2
+celery[redis]
+django-celery-beat==1.0.1
+flower==0.9.1

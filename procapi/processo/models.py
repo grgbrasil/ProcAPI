@@ -55,7 +55,7 @@ class Assunto(Document):
     def __str__(self):
         return self.nome
 
-      
+
 @python_2_unicode_compatible
 class ProcessoClasse(EmbeddedDocument):
     codigo = IntField(required=True)
@@ -148,11 +148,11 @@ class Processo(Document):
 @python_2_unicode_compatible
 class ProcessoBruto(DynamicDocument):
     processo = ReferenceField('Processo', required=True, unique=True)
-    
+
     def __str__(self):
         return self.processo
 
-      
+
 @python_2_unicode_compatible
 class PartePessoa(EmbeddedDocument):
     PESSOA_TIPO = (
@@ -252,6 +252,7 @@ class Evento(Document):
     tipo_local = StringField()
     tipo_nacional = StringField()
     usuario = StringField()
+    defensoria = BooleanField(default=False)
     documentos = EmbeddedDocumentListField('EventoDocumento')
 
     def __str__(self):
@@ -268,7 +269,7 @@ class EventoDocumento(EmbeddedDocument):
     def __str__(self):
         return '{}-{}.{}'.format(self.tipo, self.nome, self.mimetype)
 
-      
+
 @python_2_unicode_compatible
 class TipoDocumento(Document):
     codigo = IntField(required=True, unique=True, unique_with='grau')

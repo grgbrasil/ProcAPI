@@ -50,6 +50,7 @@ THIRD_PARTY_APPS = [
     'rest_framework',
     'rest_framework_swagger',
     'rest_framework_mongoengine',
+    'django_celery_beat',
 ]
 
 LOCAL_APPS = [
@@ -177,10 +178,15 @@ EPROC_WSDL_PROCESSOS = config('EPROC_WSDL_PROCESSOS')
 EPROC_WSDL_SERVICOS = config('EPROC_WSDL_SERVICOS')
 EPROC_WSDL_TABELAS = config('EPROC_WSDL_TABELAS')
 
-# DjangoRestFramework
+# DjangoRestFramework Config
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS':
     'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
 }
+
+# Celery Config
+
+CELERY_BROKER_URL = config('CELERY_BROKER_URL')
+CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND')
