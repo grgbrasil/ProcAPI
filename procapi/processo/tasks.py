@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, unicode_literals
+
+import logging
 from celery import Celery, shared_task
 from datetime import datetime
 
@@ -8,6 +10,7 @@ from procapi.processo.models import Processo
 
 app = Celery('procapi_tasks')
 app.config_from_object('django.conf:settings', namespace='CELERY')
+logger = logging.getLogger(__name__)
 
 
 @shared_task

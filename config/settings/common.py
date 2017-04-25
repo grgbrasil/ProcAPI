@@ -15,6 +15,7 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 from __future__ import absolute_import, unicode_literals
 
 import os
+import raven
 
 from mongoengine import connect
 from prettyconf import config
@@ -47,10 +48,11 @@ DJANGO_APPS = [
 ]
 
 THIRD_PARTY_APPS = [
+    'django_celery_beat',
+    'raven.contrib.django.raven_compat',
     'rest_framework',
     'rest_framework_swagger',
     'rest_framework_mongoengine',
-    'django_celery_beat',
 ]
 
 LOCAL_APPS = [
@@ -168,6 +170,69 @@ STATICFILES_DIRS = (
 MEDIA_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'procapi', 'media')
 
 MEDIA_URL = '/media/'
+
+# Raven Config
+
+RAVEN_DSN = config('RAVEN_DSN')
+RAVEN_CONFIG = {
+    'dsn': RAVEN_DSN,
+    'release': raven.fetch_git_sha(os.path.dirname(BASE_DIR)),
+}
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'root': {
+        'level': 'INFO',
+        'handlers': ['sentry'],
+    },
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s '
+                      '%(process)d %(thread)d %(message)s',
+            'datefmt': "%d/%b/%Y %H:%M:%S"
+        },
+    },
+    'handlers': {
+        'sentry': {
+            'level': 'INFO',
+            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler'
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
+        }
+    },
+    'loggers': {
+        '': {
+            'level': 'INFO',
+            'handlers': ['sentry'],
+            'propagate': False,
+        },
+        'django.db.backends': {
+            'level': 'ERROR',
+            'handlers': ['console'],
+            'propagate': False,
+        },
+        'raven': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+            'propagate': False,
+        },
+        'sentry.errors': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+            'propagate': False,
+        },
+        'eproc': {
+            'level': 'INFO',
+            'handlers': ['sentry'],
+            'propagate': False,
+        },
+
+    },
+}
 
 # E-Proc WSDL Config
 

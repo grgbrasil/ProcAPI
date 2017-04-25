@@ -2,6 +2,7 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
 import json
+import logging
 import math
 import re
 import xml.etree.ElementTree as ET
@@ -10,6 +11,9 @@ from suds.client import Client
 from suds.sudsobject import asdict
 
 from django.conf import settings
+
+loggerWS = logging.getLogger('eproc')
+
 
 class ConsultaEProc(object):
     """Consulta Processual E-Proc"""
@@ -59,12 +63,32 @@ class ConsultaEProc(object):
                 documento=True)
 
             if request:
+                loggerWS.info('service.consultarProcesso',
+                    extra={'params':{
+                        'url': self.get_url(grau),
+                        'idConsultante': usuario,
+                        'numeroProcesso': self.numero,
+                        'dataReferencia': None,
+                        'movimentos': True,
+                        'documento': True
+                }})
+
                 self.carregar(request)
+                #Rodar task de registro de acesso com sucesso...
                 return request.sucesso
 
         except Exception as ex:
-            raise Exception(ex)
+            loggerWS.critical(ex ,
+                extra={'params':{
+                    'url': self.get_url(grau),
+                    'idConsultante': usuario,
+                    'numeroProcesso': self.numero,
+                    'dataReferencia': None,
+                    'movimentos': True,
+                    'documento': True
+            }})
 
+        #Rodar task de registro de acesso com erro...
         return False
 
     def limpar(self):

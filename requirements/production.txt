@@ -10,3 +10,4 @@ celery==4.0.2
 celery[redis]
 django-celery-beat==1.0.1
 flower==0.9.1
+raven==6.0.0
