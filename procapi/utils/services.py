@@ -172,6 +172,17 @@ class ConsultaEProcMovimentados(object):
                 numMaxRegistrosRetorno=self.max_registros,
                 numPaginaAtual=pagina)
 
+            loggerWS.info('service.consultarProcessosAlteracaoPeriodo',
+                extra={'params':{
+                    'url': self.get_url(self.grau),
+                    'dataHoraInicio': self.data_inicial.strftime("%Y-%m-%d %H:%M:%S"),
+                    'dataHoraFim': self.data_final.strftime("%Y-%m-%d %H:%M:%S"),
+                    'entidade': 'DPU',
+                    'paginate': 1,
+                    'numMaxRegistrosRetorno': self.max_registros,
+                    'numPaginaAtual': pagina
+            }})
+
             root_grau = ET.fromstring(resposta)
             lista_processos = []
 
@@ -187,7 +198,16 @@ class ConsultaEProcMovimentados(object):
             return lista_processos
 
         except Exception as ex:
-            raise Exception(ex)
+            loggerWS.critical('service.consultarProcessosAlteracaoPeriodo',
+                extra={'params':{
+                    'url': self.get_url(self.grau),
+                    'dataHoraInicio': self.data_inicial.strftime("%Y-%m-%d %H:%M:%S"),
+                    'dataHoraFim': self.data_final.strftime("%Y-%m-%d %H:%M:%S"),
+                    'entidade': 'DPU',
+                    'paginate': 1,
+                    'numMaxRegistrosRetorno': self.max_registros,
+                    'numPaginaAtual': pagina
+            }})
 
         return None
 
