@@ -206,7 +206,7 @@ def extrair_eventos_processo_bruto(eproc):
                         mimetype=documento.get('_mimetype')
                     )
                     evento.documentos.append(documento)
-            if usuario[:2].upper() == 'DP' and range(0,9) in usuario[3]):
+            if usuario[:2].upper() == 'DP' and range(0,9) in usuario[3]:
                 evento.defensoria = True
             evento.save()
 

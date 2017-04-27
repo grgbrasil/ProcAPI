@@ -56,7 +56,8 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
-    'procapi.processo.apps.ProcessoConfig'
+    'procapi.processo.apps.ProcessoConfig',
+    'procapi.taskapp.apps.TaskAppConfig'
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -255,3 +256,8 @@ REST_FRAMEWORK = {
 
 CELERY_BROKER_URL = config('CELERY_BROKER_URL')
 CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND')
+
+# CELERY_IMPORTS = (
+#     'procapi.processo.apps',
+#     # 'procapi.taskapp',
+# )
