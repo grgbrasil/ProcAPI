@@ -256,8 +256,3 @@ REST_FRAMEWORK = {
 
 CELERY_BROKER_URL = config('CELERY_BROKER_URL')
 CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND')
-
-# CELERY_IMPORTS = (
-#     'procapi.processo.apps',
-#     # 'procapi.taskapp',
-# )

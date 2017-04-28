@@ -157,7 +157,7 @@ class ConsultaEProcMovimentados(object):
         """Gera a URL baseada no grau do processo"""
         return settings.EPROC_WSDL_SERVICOS.format(grau)
 
-    def consultar(self, pagina=0):
+    def consultar(self, pagina=None):
         """Consulta processos da página informada"""
 
         try:
@@ -168,7 +168,7 @@ class ConsultaEProcMovimentados(object):
                 dataHoraInicio=self.data_inicial.strftime("%Y-%m-%d %H:%M:%S"),
                 dataHoraFim=self.data_final.strftime("%Y-%m-%d %H:%M:%S"),
                 entidade='DPU',
-                paginate=1,
+                paginate=0 if pagina is None else pagina,
                 numMaxRegistrosRetorno=self.max_registros,
                 numPaginaAtual=pagina)
 

@@ -3,19 +3,57 @@ from __future__ import absolute_import, unicode_literals
 
 import logging
 from celery import Celery, shared_task
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from procapi.utils.services import ConsultaEProcMovimentados, ConsultaEProc
 from procapi.processo.models import Processo
 
 app = Celery('procapi_tasks')
 app.config_from_object('django.conf:settings', namespace='CELERY')
+
+from config.settings.common import mongo_conn
+
 logger = logging.getLogger(__name__)
 
 
 @shared_task
-def consultar_processos_movimentados(grau, data_inicial, data_final, max_registros, pagina):
-    """Baixa o número dos processos movimentos em um período de tempo"""
+def consultar_processos_movimentados_periodo(grau, periodo, execucao_inicial, execucao_final, max_registros=None, pagina=None):
+    """Baixa o número dos processos movimentos em um intervalo de tempo"""
+
+    data  = datetime.now()
+    data = datetime(data.year, data.month, data.day, data.hour, data.minute)
+    hora = data.time()
+
+    execucao_inicial = datetime.strptime(execucao_inicial,'%H:%M').time()
+    execucao_final = datetime.strptime(execucao_final,'%H:%M').time()
+
+    data_final = data
+    data_inicial = data_final-timedelta(minutes=periodo)
+
+    if execucao_inicial < execucao_final:
+        if not (hora >= execucao_inicial and hora <= execucao_final):
+            return "Task fora do período {} - {}".format(execucao_inicial,execucao_final)
+    else:
+        if not(hora >= execucao_inicial or hora <= execucao_final):
+            return "Task fora do período {} - {}".format(execucao_inicial,execucao_final)
+
+    return consultar_processos_movimentados(
+        grau=grau,
+        data_inicial=data_inicial,
+        data_final=data_final,
+        max_registros=max_registros,
+        pagina=pagina
+    )
+
+
+@shared_task
+def consultar_processos_movimentados(grau, data_inicial, data_final, max_registros=None, pagina=None):
+    """Baixa o número dos processos movimentos em um intervalo de datas"""
+
+    if not isinstance(data_inicial, datetime) and not isinstance(data_final, datetime):
+        data_inicial = datetime.strptime(data_inicial, "%Y-%m-%d %H:%M:%S")
+        data_final = datetime.strptime(data_final, "%Y-%m-%d %H:%M:%S")
+
     consulta = ConsultaEProcMovimentados(
         grau=grau,
         data_inicial=data_inicial,
@@ -26,7 +64,7 @@ def consultar_processos_movimentados(grau, data_inicial, data_final, max_registr
 
     if resposta:
         for processo in resposta:
-            criar_processo_movimentado(processo)
+            criar_processo_movimentado.delay(numero=processo)
         return True
     else:
         #Não conseguiu consultar. Repetir metodo?
@@ -38,13 +76,12 @@ def criar_processo_movimentado(numero):
     """Cria processo movimentado ou marca como desatualizado"""
     processo = Processo.objects.filter(numero=numero).first()
     if processo:
-        #print('Processo {} movimentado'.format(numero))
         processo.atualizado = False
         processo.save()
+        return {"numero": processo.numero, "novo": False}
     else:
-        #print('Processo {} criado'.format(numero))
         processo = Processo.objects.create(numero=numero, atualizado=False)
-    return processo
+    return {"numero": processo.numero, "novo": True}
 
 
 @shared_task
@@ -67,7 +104,7 @@ def atualizar_processo_desatualizado(numero):
     6 - se resposta sucesso, chama 'extrair_dados_processo_bruto'
     """
 
-    processo = criar_processo_movimentado(numero)
+    processo = Processo.objects.filter(numero=numero).first()
 
     consulta = ConsultaEProc()
 
