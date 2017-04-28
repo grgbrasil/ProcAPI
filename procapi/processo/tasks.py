@@ -6,7 +6,26 @@ from celery import Celery, shared_task
 from datetime import datetime, timedelta
 
 from procapi.utils.services import ConsultaEProcMovimentados, ConsultaEProc
-from procapi.processo.models import Processo
+from procapi.processo.models import (
+    Assunto,
+    Classe,
+    Evento,
+    EventoDocumento,
+    Localidade,
+    OrgaoJulgador,
+    Parte,
+    ParteAdvogado,
+    PartePessoa,
+    PartePessoaEndereco,
+    Processo,
+    ProcessoBruto,
+    ProcessoAssunto,
+    ProcessoClasse,
+    ProcessoLocalidade,
+    ProcessoOrgaoJulgador,
+    ProcessoVinculado,
+    TipoDocumento
+    )
 
 app = Celery('procapi_tasks')
 app.config_from_object('django.conf:settings', namespace='CELERY')
@@ -120,15 +139,14 @@ def atualizar_processo_desatualizado(numero):
 
         extrair_dados_processo_bruto(numero)
 
-        print('Processo {} atualizado'.format(numero))
+        return "Processo {} atualizado".format(numero)
 
     else:
 
-        print('Erro ao atualizar processo {}: {}'.format(numero,
-            consulta.mensagem))
+        return "Erro ao atualizar processo {}: {}".format(numero,
+            consulta.mensagem)
 
 
-@shared_task
 def extrair_dados_processo_bruto(numero):
     """Atualizar dados do processo apartir da extração dos dados brutos armazenados"""
     processo = Processo.objects(numero=numero).first()
@@ -138,7 +156,6 @@ def extrair_dados_processo_bruto(numero):
     extrair_partes_processo_bruto(eproc)
 
 
-@shared_task
 def extrair_cabecalho_processo_bruto(eproc):
     """Atualizar dados cabecalho do processo apartir da extração dos dados brutos armazenados"""
     processo = eproc.processo
@@ -202,10 +219,9 @@ def extrair_cabecalho_processo_bruto(eproc):
 
     processo.save()
 
-    print('Cabecalho do processo {} extraído com sucesso!'.format(processo.numero))
+    return "Cabecalho do processo {} extraído com sucesso!".format(processo.numero)
 
 
-@shared_task
 def extrair_eventos_processo_bruto(eproc):
     """Atualizar eventos do processo apartir da extração dos dados brutos armazenados"""
     processo = eproc.processo
@@ -243,14 +259,13 @@ def extrair_eventos_processo_bruto(eproc):
                         mimetype=documento.get('_mimetype')
                     )
                     evento.documentos.append(documento)
-            if usuario[:2].upper() == 'DP' and range(0,9) in usuario[3]:
-                evento.defensoria = True
+                if evento.usuario[:2].upper() == 'DP':
+                    evento.defensoria = True
             evento.save()
 
-    print('Eventos do processo {} extraídos com sucesso!'.format(processo.numero))
+    return "Eventos do processo {} extraídos com sucesso!".format(processo.numero)
 
 
-@shared_task
 def extrair_partes_processo_bruto(eproc):
     """Atualizar partes do processo apartir da extração dos dados brutos armazenados"""
     processo = eproc.processo
@@ -310,4 +325,4 @@ def extrair_partes_processo_bruto(eproc):
 
             parte.save()
 
-    print('Partes do processo {} extraídas com sucesso!'.format(processo.numero))
+    return "Partes do processo {} extraídas com sucesso!".format(processo.numero)
