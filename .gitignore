@@ -95,3 +95,6 @@ ENV/
 #sqlite
 *.sqlite3
 *.sqlite*
+
+# celery
+celerybeat.pid
