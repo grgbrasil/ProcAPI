@@ -244,7 +244,7 @@ class Evento(Document):
         (1, 'Segredo de Justiça'),
         (2, 'Sigiloso'))
 
-    processo = ReferenceField('Processo', required=True, unique=True, unique_with='numero')
+    processo = ReferenceField('Processo', dbref=True)
     numero = IntField(required=True)
     data_protocolo = DateTimeField()
     descricao = StringField()

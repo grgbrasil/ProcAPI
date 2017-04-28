@@ -104,12 +104,32 @@ def criar_processo_movimentado(numero):
 
 
 @shared_task
-def atualizar_processos_desatualizados():
+def atualizar_processos_desatualizados(execucao_inicial, execucao_final, limite=None):
     """Recupera lista de processos desatualizados para atualização individual"""
+
+    data  = datetime.now()
+    data = datetime(data.year, data.month, data.day, data.hour, data.minute)
+    hora = data.time()
+
+    execucao_inicial = datetime.strptime(execucao_inicial,'%H:%M').time()
+    execucao_final = datetime.strptime(execucao_final,'%H:%M').time()
+
+    if execucao_inicial < execucao_final:
+        if not (hora >= execucao_inicial and hora <= execucao_final):
+            return "Task fora do período {} - {}".format(execucao_inicial,execucao_final)
+    else:
+        if not(hora >= execucao_inicial or hora <= execucao_final):
+            return "Task fora do período {} - {}".format(execucao_inicial,execucao_final)
+
     processos = Processo.objects.filter(atualizado=False).values_list('numero')
+
+    if limite:
+        processos = processos[:limite]
+
     print('{} processos serão atualizados'.format(len(processos)))
+
     for processo in processos:
-        atualizar_processo_desatualizado(processo)
+        atualizar_processo_desatualizado.delay(numero=processo)
 
 
 @shared_task
