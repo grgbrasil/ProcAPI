@@ -98,3 +98,8 @@ ENV/
 
 # celery
 celerybeat.pid
+
+# local dir and files
+log/
+static_producao/
+medica_producao/
