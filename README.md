@@ -4,6 +4,8 @@
 
 API RESTFul para otimização de consultas ao sistema de processo judicial eletrônico **[Eproc](http://eproc.tjto.jus.br/)**.
 
+* [Instalação](/docs/README.md)
+
 **Ferramentas:**
 
 * Django
@@ -17,3 +19,6 @@ API RESTFul para otimização de consultas ao sistema de processo judicial eletr
 * Cache das consultas
 * Forçar atualizacao dos dados
 * Armazenamento da resposta para posteriores processamentos
+
+
+
