@@ -19,6 +19,7 @@ import raven
 
 from mongoengine import connect
 from prettyconf import config
+from dj_database_url import parse as db_url
 
 # Build paths inside the project like this: os.path.join(ROOT_DIR, ...)
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -99,10 +100,11 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(ROOT_DIR, 'db.sqlite3'),
-    }
+    'default': config(
+        'DATABASE_URL',
+        default='postgres://postgres:postgres@127.0.0.1:5432/db_procapi',
+        cast=db_url
+    )
 }
 
 # mongodb config
