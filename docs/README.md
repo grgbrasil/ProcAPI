@@ -6,7 +6,7 @@ sudo apt-get install git-core curl --yes
 ```
 
 ```
-sudo apt-fast -y install python-dev gettext build-essential libssl-dev zlib1g-dev libpq-dev
+sudo apt-fast -y install python3-dev gettext build-essential libssl-dev zlib1g-dev libpq-dev
 ```
 
 ## Instalando `apt-fast` (acelerador de downloads para `apt-get`)
@@ -28,23 +28,77 @@ if ! [[ -f /usr/bin/apt-fast ]]; then
 fi
 ```
 
-## Instalando o `pip` (gerenciador de pacotes python)
+## Instalando o Python 3.6 via pyenv
+
+#### Passo 1: Dependencias de compilação:
+```bash
+sudo apt-get install -y make build-essential libssl-dev zlib1g-dev libbz2-dev \
+libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev \
+xz-utils tk-dev aria2 git
+
+```
+
+#### Passo 2: Instalando o pyenv
 
 ```bash
-cd /tmp; wget https://bootstrap.pypa.io/get-pip.py -O /tmp/get-pip.py; sudo -H python2 get-pip.py -U; cd -
+curl -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash
+```
+
+Apos a instalação adicione as seguintes linhas no `~/.bashrc`
+
+```bash
+export PYTHON_BUILD_ARIA2_OPTS="-x 10 -k 1M"
+export PATH="/home/desenvolvimento/.pyenv/bin:$PATH"
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
+
+```
+
+Recarregue as variaveis de ambiente do usuario:
+
+```bash
+source ~/.bashrc
+```
+
+#### Passo 3: Instalando o Python3.6
+
+Veja qual é a ultima versão disponivel para a serie 3.6
+
+```bash
+pyenv update
+pyenv install -l | egrep "  3.6" | tail -n 1
+```
+
+Instale a ultima versão disponivel (userei 3.6.1 como exemplo)
+
+```bash
+pyenv install 3.6.1
+```
+
+Defina o Python 3.6 recem instalado, como o python padrão do usuario atual
+
+```bash
+pyenv global 3.6.1 system
+```
+
+
+## Atualizando o `pip` (gerenciador de pacotes python)
+
+```bash
+pip install pip setuptools wheel -U
 ```
 
 ## Instalando `virtualenv` e `virtualenvwrapper`
 
 ```bash
-sudo -H pip install virtualenv virtualenvwrapper
+pip install virtualenv virtualenvwrapper
 ```
 
 
 ### Configurando VirtualEnvWrapper
 
 ```bash
-echo -e "export WORKON_HOME=$HOME/.virtualenvs\nsource /usr/local/bin/virtualenvwrapper.sh" >> ~/.bashrc
+echo -e "export WORKON_HOME=$HOME/.virtualenvs\nVIRTUALENVWRAPPER_PYTHON=/home/desenvolvimento/.pyenv/shims/python \nsource /home/desenvolvimento/.pyenv/versions/3.6.1/bin/virtualenvwrapper.sh" >> ~/.bashrc
 
 source ~/.bashrc
 ```
@@ -108,7 +162,7 @@ CELERY_RESULT_BACKEND=redis://localhost:6379/0
 ## Criando virtualenv
 
 ```bash
-mkvirtualenv procapi -p python2
+mkvirtualenv procapi -p python3
 ```
 
 
@@ -129,7 +183,7 @@ pip install -r requirements/production.txt
 [Tutorial: Como servir aplicativos do Django com uWSGI e Nginx no Debian 8](https://www.digitalocean.com/community/tutorials/how-to-serve-django-applications-with-uwsgi-and-nginx-on-debian-8)
 
 ```bash
-sudo -H pip install uwsgi
+pip install uwsgi
 uwsgi --http :8000 --home diretorio_do_virtualenv --chdir diretorio_do_projeto -w config.wsgi
 ```
 
@@ -179,7 +233,7 @@ Description=uWSGI Emperor service
 
 [Service]
 ExecStartPre=/bin/bash -c 'mkdir -p /run/uwsgi; chown desenvolvimento:www-data /run/uwsgi'
-ExecStart=/usr/local/bin/uwsgi --emperor /etc/uwsgi/sites
+ExecStart=/home/desenvolvimento/.pyenv/versions/3.6.1/bin/uwsgi --emperor /etc/uwsgi/sites
 Restart=always
 KillSignal=SIGQUIT
 Type=notify
