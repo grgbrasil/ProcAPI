@@ -98,8 +98,10 @@ ENV/
 
 # celery
 celerybeat.pid
+#pycharm
+.idea/
 
 # local dir and files
 log/
 static_producao/
-medica_producao/
+media_producao/

@@ -24,6 +24,7 @@ from dj_database_url import parse as db_url
 # Build paths inside the project like this: os.path.join(ROOT_DIR, ...)
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 APPS_DIR = os.path.join(ROOT_DIR, 'procapi')
+CSV_INITIAL_DATA_PATH = os.path.join(ROOT_DIR, 'initial_data_csv')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
