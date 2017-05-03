@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import, print_function, unicode_literals
-
 import json
 import logging
 import math
@@ -9,7 +6,6 @@ import xml.etree.ElementTree as ET
 
 from suds.client import Client
 from suds.sudsobject import asdict
-
 from django.conf import settings
 
 loggerWS = logging.getLogger('eproc')
@@ -64,31 +60,31 @@ class ConsultaEProc(object):
 
             if request:
                 loggerWS.info('service.consultarProcesso',
-                    extra={'params':{
-                        'url': self.get_url(grau),
-                        'idConsultante': usuario,
-                        'numeroProcesso': self.numero,
-                        'dataReferencia': None,
-                        'movimentos': True,
-                        'documento': True
-                }})
+                              extra={'params': {
+                                  'url': self.get_url(grau),
+                                  'idConsultante': usuario,
+                                  'numeroProcesso': self.numero,
+                                  'dataReferencia': None,
+                                  'movimentos': True,
+                                  'documento': True
+                              }})
 
                 self.carregar(request)
-                #Rodar task de registro de acesso com sucesso...
+                # Rodar task de registro de acesso com sucesso...
                 return request.sucesso
 
         except Exception as ex:
-            loggerWS.critical(ex ,
-                extra={'params':{
-                    'url': self.get_url(grau),
-                    'idConsultante': usuario,
-                    'numeroProcesso': self.numero,
-                    'dataReferencia': None,
-                    'movimentos': True,
-                    'documento': True
-            }})
+            loggerWS.critical(ex,
+                              extra={'params': {
+                                  'url': self.get_url(grau),
+                                  'idConsultante': usuario,
+                                  'numeroProcesso': self.numero,
+                                  'dataReferencia': None,
+                                  'movimentos': True,
+                                  'documento': True
+                              }})
 
-        #Rodar task de registro de acesso com erro...
+        # Rodar task de registro de acesso com erro...
         return False
 
     def limpar(self):
@@ -106,7 +102,7 @@ class ConsultaEProc(object):
     def __suds_to_dict(self, data):
         """Converte sudsobject para dict"""
         out = {}
-        for key, value in asdict(data).iteritems():
+        for key, value in list(asdict(data).items()):
             if hasattr(value, '__keylist__'):
                 out[key] = self.__suds_to_dict(value)
             elif isinstance(value, list):
@@ -162,7 +158,7 @@ class ConsultaEProcMovimentados(object):
 
         try:
 
-            client = Client(self.get_url(self.grau), headers={'User-Agent':'DPE-TO'})
+            client = Client(self.get_url(self.grau), headers={'User-Agent': 'DPE-TO'})
 
             resposta = client.service.consultarProcessosAlteracaoPeriodo(
                 dataHoraInicio=self.data_inicial.strftime("%Y-%m-%d %H:%M:%S"),
@@ -173,15 +169,15 @@ class ConsultaEProcMovimentados(object):
                 numPaginaAtual=pagina)
 
             loggerWS.info('service.consultarProcessosAlteracaoPeriodo',
-                extra={'params':{
-                    'url': self.get_url(self.grau),
-                    'dataHoraInicio': self.data_inicial.strftime("%Y-%m-%d %H:%M:%S"),
-                    'dataHoraFim': self.data_final.strftime("%Y-%m-%d %H:%M:%S"),
-                    'entidade': 'DPU',
-                    'paginate': 1,
-                    'numMaxRegistrosRetorno': self.max_registros,
-                    'numPaginaAtual': pagina
-            }})
+                          extra={'params': {
+                              'url': self.get_url(self.grau),
+                              'dataHoraInicio': self.data_inicial.strftime("%Y-%m-%d %H:%M:%S"),
+                              'dataHoraFim': self.data_final.strftime("%Y-%m-%d %H:%M:%S"),
+                              'entidade': 'DPU',
+                              'paginate': 1,
+                              'numMaxRegistrosRetorno': self.max_registros,
+                              'numPaginaAtual': pagina
+                          }})
 
             root_grau = ET.fromstring(resposta)
             lista_processos = []
@@ -199,18 +195,18 @@ class ConsultaEProcMovimentados(object):
 
         except Exception as ex:
             loggerWS.critical('service.consultarProcessosAlteracaoPeriodo',
-                extra={'params':{
-                    'url': self.get_url(self.grau),
-                    'dataHoraInicio': self.data_inicial.strftime("%Y-%m-%d %H:%M:%S"),
-                    'dataHoraFim': self.data_final.strftime("%Y-%m-%d %H:%M:%S"),
-                    'entidade': 'DPU',
-                    'paginate': 1,
-                    'numMaxRegistrosRetorno': self.max_registros,
-                    'numPaginaAtual': pagina
-            }})
+                              extra={'params': {
+                                  'url': self.get_url(self.grau),
+                                  'dataHoraInicio': self.data_inicial.strftime("%Y-%m-%d %H:%M:%S"),
+                                  'dataHoraFim': self.data_final.strftime("%Y-%m-%d %H:%M:%S"),
+                                  'entidade': 'DPU',
+                                  'paginate': 1,
+                                  'numMaxRegistrosRetorno': self.max_registros,
+                                  'numPaginaAtual': pagina
+                              }})
 
         return None
 
     def calcular_total_paginas(self):
         """Calcula total de páginas baseado no total de registros"""
-        self.total_paginas = int(math.ceil(float(self.total_registros)/self.max_registros))
+        self.total_paginas = int(math.ceil(float(self.total_registros) / self.max_registros))

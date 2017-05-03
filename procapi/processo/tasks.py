@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
+
 
 import logging
 from celery import Celery, shared_task
@@ -126,7 +126,8 @@ def atualizar_processos_desatualizados(execucao_inicial, execucao_final, limite=
     if limite:
         processos = processos[:limite]
 
-    print('{} processos serão atualizados'.format(len(processos)))
+    msg = '{} processos serão atualizados'.format(len(processos))
+    print(msg)
 
     for processo in processos:
         atualizar_processo_desatualizado.delay(numero=processo)

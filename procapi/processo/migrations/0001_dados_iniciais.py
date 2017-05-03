@@ -27,7 +27,7 @@ def popular_db(mongo_model_class: object, filename: str, fields_dict: dict):
         for row in spamreader:
             if not mongo_model_class.objects.filter(codigo=row[0]).count():
                 d = {}
-                for chave, indice in fields_dict.items():
+                for chave, indice in list(fields_dict.items()):
                     d[chave] = row[indice]
                 mongo_model_class.objects.create(**d)
 
