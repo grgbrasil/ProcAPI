@@ -219,6 +219,7 @@ class ParteAdvogado(EmbeddedDocument):
 @python_2_unicode_compatible
 class Parte(Document):
     POLO_TIPO = (
+        ('', 'Outros'),
         ('AD', 'Assistente Simples Desinteressado (amicus curiae)'),
         ('AT', 'Polo Ativo'),
         ('FL', 'Fiscal da Lei Diverso'),
