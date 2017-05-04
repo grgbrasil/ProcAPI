@@ -6,7 +6,7 @@ sudo apt-get install git-core curl --yes
 ```
 
 ```
-sudo apt-fast -y install python3-dev gettext build-essential libssl-dev zlib1g-dev libpq-dev
+sudo apt-fast -y install python3-dev gettext build-essential libssl-dev zlib1g-dev libpq-dev redis-server redis-tools
 ```
 
 ## Instalando `apt-fast` (acelerador de downloads para `apt-get`)
@@ -122,6 +122,10 @@ echo "deb http://repo.mongodb.org/apt/debian jessie/mongodb-org/3.4 main" | sudo
 sudo apt-get update
 
 sudo apt-get install -y mongodb-org
+
+sudo systemctl enable mongod.service
+sudo systemctl start mongod
+
 ```
 
 # Clonando projeto
@@ -309,4 +313,14 @@ sudo nginx -t
 ```bash
 sudo systemctl enable nginx
 sudo systemctl restart nginx
+```
+
+# Celery
+
+```bash
+pkill -9 -f 'celery'
+celery flower -A procapi.taskapp --port=5555 &
+celery beat -A procapi.taskapp -l info -S django &
+celery worker -A procapi.taskapp --loglevel=INFO --concurrency=8 -n worker1@%h &
+celery worker -A procapi.taskapp --loglevel=INFO --concurrency=8 -n worker2@%h &
 ```
