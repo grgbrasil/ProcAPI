@@ -36,25 +36,12 @@ logger = logging.getLogger(__name__)
 
 
 @shared_task
-def consultar_processos_movimentados_periodo(grau, periodo, execucao_inicial, execucao_final, max_registros=None, pagina=None):
+def consultar_processos_movimentados_periodo(grau, periodo, max_registros=None, pagina=None):
     """Baixa o número dos processos movimentos em um intervalo de tempo"""
 
     data  = datetime.now()
-    data = datetime(data.year, data.month, data.day, data.hour, data.minute)
-    hora = data.time()
-
-    execucao_inicial = datetime.strptime(execucao_inicial,'%H:%M').time()
-    execucao_final = datetime.strptime(execucao_final,'%H:%M').time()
-
-    data_final = data
+    data_final = datetime(data.year, data.month, data.day, data.hour, data.minute)
     data_inicial = data_final-timedelta(minutes=periodo)
-
-    if execucao_inicial < execucao_final:
-        if not (hora >= execucao_inicial and hora <= execucao_final):
-            return "Task fora do período {} - {}".format(execucao_inicial,execucao_final)
-    else:
-        if not(hora >= execucao_inicial or hora <= execucao_final):
-            return "Task fora do período {} - {}".format(execucao_inicial,execucao_final)
 
     return consultar_processos_movimentados(
         grau=grau,
