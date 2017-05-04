@@ -13,7 +13,7 @@ from .serializers import (
     ListaParteSerializer,
     ProcessoSerializer
 )
-
+from .tasks import atualizar_processo_desatualizado
 
 class ProcessoViewSet(NestedViewSetMixin, MongoReadOnlyModelViewSet, ):
     model = Processo
@@ -23,7 +23,14 @@ class ProcessoViewSet(NestedViewSetMixin, MongoReadOnlyModelViewSet, ):
     def get_queryset(self):
         return Processo.objects.all()
 
-
+    def get_object(self):
+        object = super(ProcessoViewSet, self).get_object()
+        if object and not object.atualizado and not object.atualizando:
+            object.atualizando = True
+            object.save()
+            atualizar_processo_desatualizado.delay(numero=object.numero)
+        return object
+    
 class EventoViewSet(NestedViewSetMixin, MongoReadOnlyModelViewSet):
     model = Evento
     lookup_field = 'numero'

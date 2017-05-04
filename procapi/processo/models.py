@@ -132,6 +132,7 @@ class Processo(Document):
     data_ultimo_movimento = DateTimeField()
     data_ultima_atualizacao = DateTimeField()
     atualizado = BooleanField(default=False)
+    atualizando = BooleanField(default=False)
 
     def __str__(self):
         return self.numero

@@ -158,7 +158,9 @@ def atualizar_processo_desatualizado(numero):
         else:
             eproc = ProcessoBruto.objects.create(processo=processo, **consulta.resposta_to_dict())
 
-        extrair_dados_processo_bruto(numero)
+        extrair_eventos_processo_bruto(eproc)
+        extrair_partes_processo_bruto(eproc)
+        extrair_cabecalho_processo_bruto(eproc)
 
         return "Processo {} atualizado".format(numero)
 
@@ -166,15 +168,6 @@ def atualizar_processo_desatualizado(numero):
 
         return "Erro ao atualizar processo {}: {}".format(numero,
             consulta.mensagem)
-
-
-def extrair_dados_processo_bruto(numero):
-    """Atualizar dados do processo apartir da extração dos dados brutos armazenados"""
-    processo = Processo.objects(numero=numero).first()
-    eproc = ProcessoBruto.objects(processo=processo).first()
-    extrair_cabecalho_processo_bruto(eproc)
-    extrair_eventos_processo_bruto(eproc)
-    extrair_partes_processo_bruto(eproc)
 
 
 def extrair_cabecalho_processo_bruto(eproc):
@@ -237,6 +230,7 @@ def extrair_cabecalho_processo_bruto(eproc):
     processo.data_ultimo_movimento = None
     processo.data_ultima_atualizacao = datetime.now()
     processo.atualizado = True
+    processo.atualizando = False
 
     processo.save()
 
