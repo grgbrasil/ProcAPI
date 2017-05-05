@@ -146,7 +146,7 @@ class Processo(Document):
 
     def _identificar_grau(self):
         """Método que identifica o grau do processo"""
-        if str(self.numero)[-4:] in ['0000', '9100']:
+        if str(self.numero)[-2:] == '00':
             grau = self.GRAU_2
         else:
             grau = self.GRAU_1

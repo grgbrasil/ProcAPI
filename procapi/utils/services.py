@@ -28,7 +28,7 @@ class ConsultaEProc(object):
 
     def grau(self, numero):
         """Método que identifica o grau do processo"""
-        if numero[-4:] in ['0000', '9100']:
+        if numero[-2:] == '00':
             return self.GRAU_2
         else:
             return self.GRAU_1
