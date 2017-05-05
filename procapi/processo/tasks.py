@@ -285,14 +285,24 @@ def extrair_partes_processo_bruto(eproc):
 
             pessoa = item.get('pessoa')
 
+            try:
+                data_nascimento = datetime.strptime(pessoa.get('_dataNascimento'), '%Y%m%d')
+            except:
+                data_nascimento = None
+
+            try:
+                data_obito = datetime.strptime(pessoa.get('_dataObito'), '%Y%m%d')
+            except:
+                data_obito = None
+
             parte.pessoa = PartePessoa(
                 tipo=pessoa.get('_tipoPessoa'),
                 documento_principal=pessoa.get('_numeroDocumentoPrincipal'),
                 nome=pessoa.get('_nome'),
                 nome_genitor=pessoa.get('_nomeGenitor'),
                 nome_genitora=pessoa.get('_nomeGenitora'),
-                data_nascimento=datetime.strptime(pessoa.get('_dataNascimento'), '%Y%m%d') if pessoa.get('_dataNascimento') else None,
-                data_obito=datetime.strptime(pessoa.get('_dataObito'), '%Y%m%d') if pessoa.get('_dataObito') else None,
+                data_nascimento=data_nascimento,
+                data_obito=data_obito,
                 sexo=pessoa.get('_sexo') if pessoa.get('_sexo') else None,
                 cidade_natural=pessoa.get('_cidadeNatural'),
                 estado_natural=pessoa.get('_estadoNatural'),
