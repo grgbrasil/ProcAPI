@@ -81,13 +81,16 @@ def consultar_processos_movimentados(grau, data_inicial, data_final, max_registr
 def criar_processo_movimentado(numero):
     """Cria processo movimentado ou marca como desatualizado"""
     processo = Processo.objects.filter(numero=numero).first()
+    novo = False
+
     if processo:
         processo.atualizado = False
         processo.save()
-        return {"numero": processo.numero, "novo": False}
     else:
+        novo = True
         processo = Processo.objects.create(numero=numero, atualizado=False)
-    return {"numero": processo.numero, "novo": True}
+    
+    return {"numero": processo.numero, "novo": novo}
 
 
 @shared_task
