@@ -13,7 +13,10 @@ from .serializers import (
     ListaParteSerializer,
     ProcessoSerializer
 )
-from .tasks import atualizar_processo_desatualizado
+from .tasks import (
+    atualizar_processo_desatualizado,
+    criar_processo_movimentado
+)
 
 class ProcessoViewSet(NestedViewSetMixin, MongoReadOnlyModelViewSet, ):
     model = Processo
@@ -24,11 +27,18 @@ class ProcessoViewSet(NestedViewSetMixin, MongoReadOnlyModelViewSet, ):
         return Processo.objects.all()
 
     def get_object(self):
+
+        # Se numero não existe, força criação
+        if not Processo.objects.filter(numero=self.kwargs['numero']).count():
+            criar_processo_movimentado(numero=self.kwargs['numero'])
+
         object = super(ProcessoViewSet, self).get_object()
+
         if object and not object.atualizado and not object.atualizando:
             object.atualizando = True
             object.save()
             atualizar_processo_desatualizado.delay(numero=object.numero)
+
         return object
     
 class EventoViewSet(NestedViewSetMixin, MongoReadOnlyModelViewSet):

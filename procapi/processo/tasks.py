@@ -2,6 +2,8 @@
 
 
 import logging
+import re
+
 from celery import Celery, shared_task
 from datetime import datetime, timedelta
 
@@ -80,6 +82,16 @@ def consultar_processos_movimentados(grau, data_inicial, data_final, max_registr
 @shared_task
 def criar_processo_movimentado(numero):
     """Cria processo movimentado ou marca como desatualizado"""
+    numero = re.sub('[^0-9]', '', numero)
+
+    # Se o formato do número for inválido, não registra processo
+    if len(numero) != 20:
+        return {
+            "numero": numero,
+            "novo": True,
+            "mensagem": "Processo não cadastrado: formato do número é inválido"
+        }
+
     processo = Processo.objects.filter(numero=numero).first()
     novo = False
 
