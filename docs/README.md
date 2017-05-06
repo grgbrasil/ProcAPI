@@ -132,7 +132,7 @@ sudo systemctl start mongod
 ```bash
 cd $HOME
 
-git clone https://github.com/lmoabreu/ProcAPI procapi
+git clone https://github.com/tiagoamx/ProcAPI procapi
 ```
 
 ## Configurando arquivo .env
