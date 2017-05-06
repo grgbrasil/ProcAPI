@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, print_function, unicode_literals
+
 
 from django.core.urlresolvers import reverse
 from django.utils.encoding import python_2_unicode_compatible
@@ -111,9 +111,12 @@ class ProcessoVinculado(EmbeddedDocument):
 
 @python_2_unicode_compatible
 class Processo(Document):
+    GRAU_1 = 1
+    GRAU_2 = 2
+
     PROCESSO_GRAU = (
-        (1, '1º Grau'),
-        (2, '2º Grau'))
+        (GRAU_1, '1º Grau'),
+        (GRAU_2, '2º Grau'))
     PROCESSO_NIVEL_SIGILO = (
         (0, 'Público'),
         (1, 'Segredo de Justiça'),
@@ -132,9 +135,23 @@ class Processo(Document):
     data_ultimo_movimento = DateTimeField()
     data_ultima_atualizacao = DateTimeField()
     atualizado = BooleanField(default=False)
+    atualizando = BooleanField(default=False)
 
     def __str__(self):
         return self.numero
+
+    def save(self, *args, **kwargs):
+        self.grau = self._identificar_grau()
+        return super(Processo, self).save(*args, **kwargs)
+
+    def _identificar_grau(self):
+        """Método que identifica o grau do processo"""
+        if str(self.numero)[-2:] == '00':
+            grau = self.GRAU_2
+        else:
+            grau = self.GRAU_1
+
+        return grau
 
     @property
     def eventos(self):
@@ -219,6 +236,7 @@ class ParteAdvogado(EmbeddedDocument):
 @python_2_unicode_compatible
 class Parte(Document):
     POLO_TIPO = (
+        ('', 'Outros'),
         ('AD', 'Assistente Simples Desinteressado (amicus curiae)'),
         ('AT', 'Polo Ativo'),
         ('FL', 'Fiscal da Lei Diverso'),

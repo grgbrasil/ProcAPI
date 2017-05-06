@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, unicode_literals
+
 
 import logging
+import re
+
 from celery import Celery, shared_task
 from datetime import datetime, timedelta
 
@@ -36,25 +38,12 @@ logger = logging.getLogger(__name__)
 
 
 @shared_task
-def consultar_processos_movimentados_periodo(grau, periodo, execucao_inicial, execucao_final, max_registros=None, pagina=None):
+def consultar_processos_movimentados_periodo(grau, periodo, max_registros=None, pagina=None):
     """Baixa o número dos processos movimentos em um intervalo de tempo"""
 
     data  = datetime.now()
-    data = datetime(data.year, data.month, data.day, data.hour, data.minute)
-    hora = data.time()
-
-    execucao_inicial = datetime.strptime(execucao_inicial,'%H:%M').time()
-    execucao_final = datetime.strptime(execucao_final,'%H:%M').time()
-
-    data_final = data
+    data_final = datetime(data.year, data.month, data.day, data.hour, data.minute)
     data_inicial = data_final-timedelta(minutes=periodo)
-
-    if execucao_inicial < execucao_final:
-        if not (hora >= execucao_inicial and hora <= execucao_final):
-            return "Task fora do período {} - {}".format(execucao_inicial,execucao_final)
-    else:
-        if not(hora >= execucao_inicial or hora <= execucao_final):
-            return "Task fora do período {} - {}".format(execucao_inicial,execucao_final)
 
     return consultar_processos_movimentados(
         grau=grau,
@@ -93,40 +82,39 @@ def consultar_processos_movimentados(grau, data_inicial, data_final, max_registr
 @shared_task
 def criar_processo_movimentado(numero):
     """Cria processo movimentado ou marca como desatualizado"""
+    numero = re.sub('[^0-9]', '', numero)
+
+    # Se o formato do número for inválido, não registra processo
+    if len(numero) != 20:
+        return {
+            "numero": numero,
+            "novo": True,
+            "mensagem": "Processo não cadastrado: formato do número é inválido"
+        }
+
     processo = Processo.objects.filter(numero=numero).first()
+    novo = False
+
     if processo:
         processo.atualizado = False
         processo.save()
-        return {"numero": processo.numero, "novo": False}
     else:
+        novo = True
         processo = Processo.objects.create(numero=numero, atualizado=False)
-    return {"numero": processo.numero, "novo": True}
+    
+    return {"numero": processo.numero, "novo": novo}
 
 
 @shared_task
-def atualizar_processos_desatualizados(execucao_inicial, execucao_final, limite=None):
+def atualizar_processos_desatualizados(limite=None):
     """Recupera lista de processos desatualizados para atualização individual"""
-
-    data  = datetime.now()
-    data = datetime(data.year, data.month, data.day, data.hour, data.minute)
-    hora = data.time()
-
-    execucao_inicial = datetime.strptime(execucao_inicial,'%H:%M').time()
-    execucao_final = datetime.strptime(execucao_final,'%H:%M').time()
-
-    if execucao_inicial < execucao_final:
-        if not (hora >= execucao_inicial and hora <= execucao_final):
-            return "Task fora do período {} - {}".format(execucao_inicial,execucao_final)
-    else:
-        if not(hora >= execucao_inicial or hora <= execucao_final):
-            return "Task fora do período {} - {}".format(execucao_inicial,execucao_final)
 
     processos = Processo.objects.filter(atualizado=False).values_list('numero')
 
     if limite:
         processos = processos[:limite]
 
-    print('{} processos serão atualizados'.format(len(processos)))
+    msg = '{} processos serão atualizados'.format(len(processos))
 
     for processo in processos:
         atualizar_processo_desatualizado.delay(numero=processo)
@@ -157,7 +145,9 @@ def atualizar_processo_desatualizado(numero):
         else:
             eproc = ProcessoBruto.objects.create(processo=processo, **consulta.resposta_to_dict())
 
-        extrair_dados_processo_bruto(numero)
+        extrair_eventos_processo_bruto(eproc)
+        extrair_partes_processo_bruto(eproc)
+        extrair_cabecalho_processo_bruto(eproc)
 
         return "Processo {} atualizado".format(numero)
 
@@ -165,15 +155,6 @@ def atualizar_processo_desatualizado(numero):
 
         return "Erro ao atualizar processo {}: {}".format(numero,
             consulta.mensagem)
-
-
-def extrair_dados_processo_bruto(numero):
-    """Atualizar dados do processo apartir da extração dos dados brutos armazenados"""
-    processo = Processo.objects(numero=numero).first()
-    eproc = ProcessoBruto.objects(processo=processo).first()
-    extrair_cabecalho_processo_bruto(eproc)
-    extrair_eventos_processo_bruto(eproc)
-    extrair_partes_processo_bruto(eproc)
 
 
 def extrair_cabecalho_processo_bruto(eproc):
@@ -236,6 +217,7 @@ def extrair_cabecalho_processo_bruto(eproc):
     processo.data_ultimo_movimento = None
     processo.data_ultima_atualizacao = datetime.now()
     processo.atualizado = True
+    processo.atualizando = False
 
     processo.save()
 
@@ -303,14 +285,24 @@ def extrair_partes_processo_bruto(eproc):
 
             pessoa = item.get('pessoa')
 
+            try:
+                data_nascimento = datetime.strptime(pessoa.get('_dataNascimento'), '%Y%m%d')
+            except:
+                data_nascimento = None
+
+            try:
+                data_obito = datetime.strptime(pessoa.get('_dataObito'), '%Y%m%d')
+            except:
+                data_obito = None
+
             parte.pessoa = PartePessoa(
                 tipo=pessoa.get('_tipoPessoa'),
                 documento_principal=pessoa.get('_numeroDocumentoPrincipal'),
                 nome=pessoa.get('_nome'),
                 nome_genitor=pessoa.get('_nomeGenitor'),
                 nome_genitora=pessoa.get('_nomeGenitora'),
-                data_nascimento=datetime.strptime(pessoa.get('_dataNascimento'), '%Y%m%d') if pessoa.get('_dataNascimento') else None,
-                data_obito=datetime.strptime(pessoa.get('_dataObito'), '%Y%m%d') if pessoa.get('_dataObito') else None,
+                data_nascimento=data_nascimento,
+                data_obito=data_obito,
                 sexo=pessoa.get('_sexo') if pessoa.get('_sexo') else None,
                 cidade_natural=pessoa.get('_cidadeNatural'),
                 estado_natural=pessoa.get('_estadoNatural'),

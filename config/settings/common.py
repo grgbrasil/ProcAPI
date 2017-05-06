@@ -19,10 +19,12 @@ import raven
 
 from mongoengine import connect
 from prettyconf import config
+from dj_database_url import parse as db_url
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
+# Build paths inside the project like this: os.path.join(ROOT_DIR, ...)
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+APPS_DIR = os.path.join(ROOT_DIR, 'procapi')
+CSV_INITIAL_DATA_PATH = os.path.join(ROOT_DIR, 'initial_data_csv')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
@@ -78,7 +80,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            os.path.join(os.path.dirname(BASE_DIR), 'procapi', 'templates')
+            os.path.join(APPS_DIR, 'templates')
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -99,10 +101,11 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
+    'default': config(
+        'DATABASE_URL',
+        default='postgres://postgres:postgres@127.0.0.1:5432/db_procapi',
+        cast=db_url
+    )
 }
 
 # mongodb config
@@ -160,15 +163,15 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'procapi', 'staticfiles')
+STATIC_ROOT = os.path.join(ROOT_DIR, 'static_producao')
 
-STATICFILES_DIRS = (
-    os.path.join(os.path.dirname(BASE_DIR), 'procapi', 'static'),
-)
+#STATICFILES_DIRS = (
+#    os.path.join(APPS_DIR, 'static'),
+#)
 
 # Media files
 
-MEDIA_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'procapi', 'media')
+MEDIA_ROOT = os.path.join(ROOT_DIR, 'media_producao')
 
 MEDIA_URL = '/media/'
 
@@ -177,7 +180,7 @@ MEDIA_URL = '/media/'
 RAVEN_DSN = config('RAVEN_DSN')
 RAVEN_CONFIG = {
     'dsn': RAVEN_DSN,
-    'release': raven.fetch_git_sha(os.path.dirname(BASE_DIR)),
+    'release': raven.fetch_git_sha(ROOT_DIR),
 }
 
 LOGGING = {
